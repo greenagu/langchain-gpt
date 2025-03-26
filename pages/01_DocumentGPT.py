@@ -40,12 +40,8 @@ llm = ChatOpenAI(
     ],
 )
 
-
-# memory = ConversationBufferMemory(
-#     return_messages=True,
-#     input_key="question",
-#     output_key="output",
-# )
+if "memories" not in st.session_state:
+        st.session_state["memories"] = {}
 
 @st.cache_resource(show_spinner="Embedding file...")
 def embed_file(file):
