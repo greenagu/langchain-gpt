@@ -12,6 +12,7 @@ from langchain.embeddings import OpenAIEmbeddings #구버전 배포용
 from tenacity import RetryError
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.callbacks.base import BaseCallbackHandler
+import os
 
 st.set_page_config(
     page_title="DocumentGPT",
@@ -49,6 +50,9 @@ llm = ChatOpenAI(
 @st.cache_resource(show_spinner="Embedding file...")
 def embed_file(file):
     file_content = file.read()
+    
+    os.makedirs("./.cache/files", exist_ok=True)
+    
     file_path = f"./.cache/files/{file.name}"
     with open(file_path, "wb") as f:
         f.write(file_content)
