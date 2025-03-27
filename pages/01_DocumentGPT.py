@@ -7,8 +7,8 @@ from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.vectorstores import FAISS
 # from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI #구버전 배포용
-from langchain.embeddings import OpenAIEmbeddings #구버전 배포용
+from langchain.chat_models import ChatOpenAI #구버전 streamlit 배포용
+from langchain.embeddings import OpenAIEmbeddings #구버전 streamlit 배포용
 from tenacity import RetryError
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.callbacks.base import BaseCallbackHandler
@@ -119,6 +119,9 @@ with st.sidebar:
         "Upload a.txt .pdf or .docx file",
         type=["pdf", "txt", "docx"],
     )
+    st.markdown("[Github](https://github.com/greenagu/langchain-gpt)")
+    st.markdown("[Streamlit App](https://langchain-gpt-z73xrdmpkhfwdpyxnk269w.streamlit.app/)")
+
 
 if file:
     file_id = file.name
