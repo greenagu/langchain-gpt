@@ -217,11 +217,11 @@ else:
         memory_keys = list(st.session_state["memories"].keys())
         if memory_keys:
             similar_question = find_similar_question_via_llm(query, memory_keys)
-            st.write(similar_question)
             if similar_question:
                 idx = int(similar_question)
                 cached = st.session_state["memories"][memory_keys[idx]]
                 st.markdown(cached.replace('$', '\$'))
+                st.write("cached data!!!!!🎃")
             else:
                 get_site_contents(CLOUDFLARE_SITE_MAP)
         else:
