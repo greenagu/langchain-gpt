@@ -7,6 +7,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.callbacks import StreamingStdOutCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
+from spacy import blank
 import streamlit as st
 
 CLOUDFLARE_SITE_MAP="https://developers.cloudflare.com/sitemap-0.xml"
@@ -146,12 +147,14 @@ These are questions that users have asked before:
 The user's current question:
 “{new_question}”
 
-If this new question is semantically similar or identical to any of the above questions, please point us to the previous thread. Otherwise, answer with a blank
+The number after the Q letter is the index to the question.
+If the question is similar to the user's question, we output **only** the number after index.
+If there are no similar questions, return a blank space.
 """)
 
 def find_similar_question_via_llm(query, previous_questions):
-    previous_formatted = "\n".join(
-        [f"{question}" for question in previous_questions]
+    previous_formatted = "\n\n".join(
+        [f"index:{idx} {question}" for idx, question in enumerate(previous_questions)]
     )
     prompt_input = {
         "previous_questions": previous_formatted,
@@ -159,10 +162,7 @@ def find_similar_question_via_llm(query, previous_questions):
     }
     prompt_chain = similarity_prompt | llm
     response = prompt_chain.invoke(prompt_input).content
-    # return response
-    if response in previous_questions:
-        return response
-    return None
+    return response
 
 def get_site_contents(url):
     retriever = load_website(url)
@@ -217,10 +217,11 @@ else:
         memory_keys = list(st.session_state["memories"].keys())
         if memory_keys:
             similar_question = find_similar_question_via_llm(query, memory_keys)
+            st.write(similar_question)
             if similar_question:
-                cached = st.session_state["memories"][similar_question.strip()]
+                idx = int(similar_question)
+                cached = st.session_state["memories"][memory_keys[idx]]
                 st.markdown(cached.replace('$', '\$'))
-                st.write("cached data!!!!!🎃")
             else:
                 get_site_contents(CLOUDFLARE_SITE_MAP)
         else:
