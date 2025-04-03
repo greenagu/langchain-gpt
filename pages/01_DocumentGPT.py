@@ -32,14 +32,6 @@ class ChatCallbackHandler(BaseCallbackHandler):
         self.message += token
         self.message_box.markdown(self.message)
 
-llm = ChatOpenAI(
-    temperature=0.1,
-    streaming=True,
-    callbacks=[
-        ChatCallbackHandler(),
-    ],
-)
-
 if "memories" not in st.session_state:
         st.session_state["memories"] = {}
 
@@ -115,41 +107,57 @@ st.markdown(
 )
 
 with st.sidebar:
-    file = st.file_uploader(
-        "Upload a.txt .pdf or .docx file",
-        type=["pdf", "txt", "docx"],
-    )
-    st.markdown("[Github](https://github.com/greenagu/langchain-gpt)")
-    st.markdown("[Streamlit App](https://langchain-gpt-z73xrdmpkhfwdpyxnk269w.streamlit.app/)")
-
-
-if file:
-    file_id = file.name
-    retriever = embed_file(file)
-    send_message("I'm ready! Ask away!", "ai", save=False)
-    paint_history()
-    message = st.chat_input("Ask anything about your file....")
+    openai_api_key = st.text_input("Input your OpenAI API Key")
     
-    if file_id not in st.session_state["memories"]:
-        st.session_state["memories"][file_id] = ConversationBufferMemory(
-            return_messages=True,
-            input_key="question",
-            output_key="output",
-    )
+    if not openai_api_key:
+        st.error("Please input your OpenAI API Key on the sidebar")
+    else:
+        file = st.file_uploader(
+            "Upload a.txt .pdf or .docx file",
+            type=["pdf", "txt", "docx"],
+        )
+        st.markdown("[Github](https://github.com/greenagu/langchain-gpt)")
+        st.markdown("[Streamlit App](https://langchain-gpt-z73xrdmpkhfwdpyxnk269w.streamlit.app/)")
 
-    memory = st.session_state["memories"][file_id]        
+
+    if file:
+        file_id = file.name
+        retriever = embed_file(file)
+        send_message("I'm ready! Ask away!", "ai", save=False)
+        paint_history()
+        message = st.chat_input("Ask anything about your file....")
         
-    def load_memory(_):
-        return memory.load_memory_variables({})["history"]
+        if file_id not in st.session_state["memories"]:
+            st.session_state["memories"][file_id] = ConversationBufferMemory(
+                return_messages=True,
+                input_key="question",
+                output_key="output",
+        )
+            
+            
+        llm = ChatOpenAI(
+            temperature=0.1,
+            streaming=True,
+            callbacks=[
+                ChatCallbackHandler(),
+            ],
+            openai_api_key=openai_api_key,
+        )
 
-    if message:
-        send_message(message, "human")
-        chain = ({
-            "context": retriever | RunnableLambda(format_docs),
-            "question": RunnablePassthrough(),
-            "history": load_memory,
-        } | prompt | llm)
-        with st.chat_message("ai"):
-            result = chain.invoke(message)
-else:
-    st.session_state["messages"] = []
+
+        memory = st.session_state["memories"][file_id]        
+            
+        def load_memory(_):
+            return memory.load_memory_variables({})["history"]
+
+        if message:
+            send_message(message, "human")
+            chain = ({
+                "context": retriever | RunnableLambda(format_docs),
+                "question": RunnablePassthrough(),
+                "history": load_memory,
+            } | prompt | llm)
+            with st.chat_message("ai"):
+                result = chain.invoke(message)
+    else:
+        st.session_state["messages"] = []
