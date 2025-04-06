@@ -203,6 +203,9 @@ def insert_message(message, role):
 
 with st.sidebar:
     openai_api_key = st.text_input("Input your OpenAI API Key")
+    st.markdown("---")
+    st.markdown("[Github](https://github.com/greenagu/langchain-gpt)")
+    st.markdown("[Streamlit App](https://langchain-gpt-z73xrdmpkhfwdpyxnk269w.streamlit.app/)")
 
 if not openai_api_key:
     st.error("Please input your OpenAI API Key on the sidebar")
